@@ -34,7 +34,7 @@ def base2i(s, base, charset=conv_base_charset) -> int:
     return value
 
 # Calculates shannon entropy with a known charset
-def shannon_entropy(s, charset):
+def entropy(s, charset=list(range(256))):
     L = len(s)
     counts = Counter(s)
     probs = [counts[c]/L for c in charset]
@@ -47,7 +47,7 @@ def shannon_entropy(s, charset):
 
 
 # For each number base, sort it based on entropy
-def sorted_base_entropy(value, max_values=10, log=True):
+def sorted_base_entropy(value, top=10, log=True):
     if not isinstance(value, int):
         raise Exception(f"input should be int")
     RESET = "\033[0m"
@@ -72,7 +72,9 @@ def sorted_base_entropy(value, max_values=10, log=True):
         entropy = shannon_entropy(base_value, conv_base_charset[:abs(b)])
         v.append((base_value, b, entropy))
 
-    out = (sorted(v, key=lambda x: x[2]))[:max_values]
+    out = (sorted(v, key=lambda x: x[2]))
+    if top is not None:
+        out = out[:top]
     if log:
         for (value, b, entropy) in out:
             print(f'{colorize(entropy)}\t{b}\t{len(value)}')

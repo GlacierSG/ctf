@@ -1,16 +1,6 @@
-
 import sys, os, string, re, base64, json, subprocess, itertools, random
-# Is virtual environment
-if sys.prefix != sys.base_prefix:
-    VENV_PATH = sys.prefix
-else:
-    VENV_PATH = os.path.expanduser(f"~/.cache/ctf/venv{sys.version_info.major}.{sys.version_info.minor}")
-    if not os.path.isdir(VENV_PATH):
-        subprocess.check_call([sys.executable, "-m", "venv", VENV_PATH])
 
-    sp = f"{VENV_PATH}/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"
-    if sp not in sys.path:
-        sys.path.insert(0, sp)
+from .setup_venv import * 
 
 from importlib.metadata import version, PackageNotFoundError
 def isinstalled(modules):
