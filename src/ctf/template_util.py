@@ -86,7 +86,7 @@ urlsafe_b64e= lambda value: base64.urlsafe_b64encode(s2b(value))
 urlsafe_b64d = lambda value: base64.urlsafe_b64decode(s2b(value) + b"="*(-len(value)%4))
 
 # Sorted by freq analysis on flags (ignoring flag{} and random flags)
-string.flag = r"""_3tnr0es1a4hloiducympgfb5w7kT!vS2-RCENDAL6IPH98UYOMF.GxzW?BjK@Vq/: X$,#QJZ'~\{}<&+=>()*|%;"[]^`"""
+string.flag = '''_3tnr0es1a4hloiducympgfb5w7kT!vS2R-ECNDAL6IPH9U8YOMF.GxzW?BK@jVq/: X$,\#QZJ'~{<&}>=+)(|*;%]`[^"'''
 string.lowercase = string.ascii_lowercase
 string.uppercase = string.ascii_uppercase
 string.letters = string.ascii_letters
