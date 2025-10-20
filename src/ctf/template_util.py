@@ -1,7 +1,5 @@
 import sys, os, string, re, base64, json, subprocess, itertools, random
 
-from .setup_venv import * 
-
 from importlib.metadata import version, PackageNotFoundError
 def isinstalled(modules):
     if isinstance(modules, str):
@@ -15,13 +13,15 @@ def isinstalled(modules):
             found = False
     return found
 
+def _python_dir():
+    return (getattr(sys, "base_prefix", None) or getattr(sys, "real_prefix", None) or sys.prefix)
 def install(modules):
     if isinstance(modules, str):
         modules = [modules]
 
     for module in modules:
         if not isinstalled(module):
-            subprocess.check_call([f"{VENV_PATH}/bin/python", "-m", "pip", "install", module])
+            subprocess.check_call([f"{_python_dir()}/bin/python", "-m", "pip", "install", module])
 
 install([
     'requests',

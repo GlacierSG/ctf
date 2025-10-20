@@ -19,3 +19,23 @@ else:
     sp = f"{VENV_PATH}/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"
     if sp not in sys.path:
         sys.path.insert(0, sp)
+
+from importlib.metadata import version, PackageNotFoundError
+def isinstalled(modules):
+    if isinstance(modules, str):
+        modules = [modules]
+    
+    found = True
+    for module in modules:
+        try:
+            version(module)
+        except PackageNotFoundError:
+            found = False
+    return found
+
+run_shell = lambda cmd: subprocess.run(cmd, shell=True, capture_output=True) # x.stdout, x.stderr, x.returncode
+if not isinstalled('ctf'):
+    out = (run_shell([f"{VENV_PATH}/bin/python -m pip install ~/.config/ctf/"]))
+    if out.returncode != 0:
+        raise Exception(f'Could not install ctf: {out.stderr.decode()}')
+from ctf import *
