@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ctf"
+version = "0.1.0"
+description = "Example package installable via git+https"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{name = "GlacierSG", email = "glaciersg@proton.me"}]
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]

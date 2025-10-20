@@ -1,6 +1,7 @@
 import sys, os, string, re, base64, json, subprocess, itertools, random
 VENV_PATH = os.path.expanduser(f"~/.cache/ctf/venv{sys.version_info.major}.{sys.version_info.minor}")
 
+
 def install(modules):
     if isinstance(modules, str):
         modules = [modules]
