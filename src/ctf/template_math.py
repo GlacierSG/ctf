@@ -1,6 +1,6 @@
 import math
 from collections import Counter
-from template_util import *
+from .template_util import *
 
 # Not normal base64 alphabet
 conv_base_charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/"

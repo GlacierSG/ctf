@@ -1,21 +1,36 @@
+
 import sys, os, string, re, base64, json, subprocess, itertools, random
-VENV_PATH = os.path.expanduser(f"~/.cache/ctf/venv{sys.version_info.major}.{sys.version_info.minor}")
-
-
-def install(modules):
-    if isinstance(modules, str):
-        modules = [modules]
+# Is virtual environment
+if sys.prefix != sys.base_prefix:
+    VENV_PATH = sys.prefix
+else:
+    VENV_PATH = os.path.expanduser(f"~/.cache/ctf/venv{sys.version_info.major}.{sys.version_info.minor}")
     if not os.path.isdir(VENV_PATH):
         subprocess.check_call([sys.executable, "-m", "venv", VENV_PATH])
+
     sp = f"{VENV_PATH}/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"
     if sp not in sys.path:
         sys.path.insert(0, sp)
 
-    from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import version, PackageNotFoundError
+def isinstalled(modules):
+    if isinstance(modules, str):
+        modules = [modules]
+    
+    found = True
     for module in modules:
         try:
             version(module)
         except PackageNotFoundError:
+            found = False
+    return found
+
+def install(modules):
+    if isinstance(modules, str):
+        modules = [modules]
+
+    for module in modules:
+        if not isinstalled(module):
             subprocess.check_call([f"{VENV_PATH}/bin/python", "-m", "pip", "install", module])
 
 install([
@@ -49,6 +64,8 @@ aes_cbc_dec = lambda value, key, iv: unpad(AES.new(key=s2b(key), iv=iv, mode=AES
 
 l2b = long_to_bytes
 b2l = bytes_to_long
+i2b = l2b
+b2i = b2l
 
 b2s = lambda value: value.decode() if isinstance(value, bytes) or isinstance(value, bytearray) else value
 s2b = lambda value: value if isinstance(value, bytes) or isinstance(value, bytearray) else value.encode()
