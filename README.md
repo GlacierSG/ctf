@@ -12,6 +12,15 @@ apt install -y git python3 python3-venv
 ```python
 # pip install git+https://github.com/GlacierSG/ctf.git
 from ctf import *
+
+install('pwntools')
+from pwn import *
+
+dbg(l2b(1337))
+
+s = getsession(True)
+r = dbg(s.get('https://example.com'))
+print(py2json(r.json()))
 ```
 
 ## Local Setup
