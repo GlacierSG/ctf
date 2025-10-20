@@ -37,7 +37,7 @@ def isinstalled(modules):
 
 run_shell = lambda cmd: subprocess.run(cmd, shell=True, capture_output=True) # x.stdout, x.stderr, x.returncode
 if not isinstalled('ctf'):
-    out = (run_shell([f"{VENV_PATH}/bin/python -m pip install ~/.config/ctf/"]))
+    out = (run_shell([f"{VENV_PATH}/bin/python{sys.version_info.major} -m pip install ~/.config/ctf/"]))
     if out.returncode != 0:
         raise Exception(f'Could not install ctf: {out.stderr.decode()}')
 
