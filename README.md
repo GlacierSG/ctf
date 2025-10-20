@@ -1,5 +1,13 @@
 # CTF
 
+# Dependencies
+Install `git`, `python3`, `python3-venv`
+## Ubuntu
+```
+apt update
+apt install -y git python3 python3-venv
+```
+
 ## Usage
 ```python
 # pip install git+https://github.com/GlacierSG/ctf.git
