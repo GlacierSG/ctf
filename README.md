@@ -20,7 +20,7 @@ dbg(l2b(1337))
 
 s = getsession(proxy=True)
 r = dbg(s.get('https://example.com'))
-print(py2json(r.json()))
+print(urle(py2json(r.json())))
 ```
 
 ## Local Setup
