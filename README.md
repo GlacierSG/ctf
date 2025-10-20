@@ -18,7 +18,7 @@ from pwn import *
 
 dbg(l2b(1337))
 
-s = getsession(True)
+s = getsession(proxy=True)
 r = dbg(s.get('https://example.com'))
 print(py2json(r.json()))
 ```
