@@ -30,7 +30,15 @@ git clone https://github.com/GlacierSG/ctf.git
 python3 ~/.config/ctf/src/ctf/template_default.py
 source ~/.cache/ctf/venv*/bin/activate
 ```
+### For scripts
+So you dont have to think about virtual environments
+```python
+import os, runpy ### https://github.com/GlacierSG/ctf
+(_path:=os.path.expanduser("~/.config/ctf/src/ctf/template_default.py"), \
+runpy.run_path(_path) if os.path.exists(_path) else None)
 
+from ctf import *
+```
 ### For python interactive interpreter
 ```
 export PYTHONSTARTUP="$HOME/.config/ctf/src/ctf/template_default.py"
