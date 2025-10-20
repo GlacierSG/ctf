@@ -1,18 +1,19 @@
 # CTF
 
-## Setup
+## Usage
+```python
+# pip install git+https://github.com/GlacierSG/ctf.git
+from ctf import *
+```
+
+## Local Setup
 ```bash
 mkdir -p ~/.config/ && cd ~/.config/
 git clone https://github.com/GlacierSG/ctf.git
+python3 ~/.config/ctf/src/ctf/template_default.py
 ```
 
 ### For python interactive interpreter
 ```
 export PYTHONSTARTUP="$HOME/.config/ctf/src/ctf/template_default.py"
-```
-### For scripts
-```python
-# From https://github.com/GlacierSG/ctf
-__import__('sys').path.insert(1,__import__('os').path.expanduser("~/.config/ctf/src/ctf"));
-from template_default import *
 ```
