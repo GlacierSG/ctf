@@ -11,6 +11,7 @@ from ctf import *
 mkdir -p ~/.config/ && cd ~/.config/
 git clone https://github.com/GlacierSG/ctf.git
 python3 ~/.config/ctf/src/ctf/template_default.py
+source ~/.cache/ctf/venv*/bin/activate
 ```
 
 ### For python interactive interpreter
