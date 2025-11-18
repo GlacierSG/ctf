@@ -24,7 +24,7 @@ def install(modules):
             subprocess.check_call([f"{_python_dir()}/bin/python", "-m", "pip", "install", module])
 
 install([
-    'requests',
+    'httpx',
     'pycryptodome'
 ])
 
@@ -33,7 +33,7 @@ from Crypto.Util.Padding import pad as _pad, unpad as _unpad
 from Crypto.Cipher import AES
 from ast import literal_eval 
 import hashlib
-import requests
+import httpx
 from urllib.parse import unquote, quote
 
 urld = lambda value: unquote(value)
@@ -82,8 +82,8 @@ hex2l_le = lambda value: b2l(hex2b(value)[::-1])
 
 b64e = lambda value: base64.b64encode(s2b(value))
 b64d = lambda value: base64.b64decode(s2b(value) + b"="*(-len(value)%4))
-urlsafe_b64e= lambda value: base64.urlsafe_b64encode(s2b(value))
-urlsafe_b64d = lambda value: base64.urlsafe_b64decode(s2b(value) + b"="*(-len(value)%4))
+b64_urle = lambda value: base64.urlsafe_b64encode(s2b(value))
+b64_urld = lambda value: base64.urlsafe_b64decode(s2b(value) + b"="*(-len(value)%4))
 
 # Sorted by freq analysis on flags (ignoring flag{} and random flags)
 string.flag = '''_3tnr0es1a4hloiducympgfb5w7kT!vS2R-ECNDAL6IPH9U8YOMF.GxzW?BK@jVq/: X$,\#QZJ'~{<&}>=+)(|*;%]`[^"'''
@@ -111,23 +111,21 @@ sha3_256 = lambda value: hashlib.sha3_256(s2b(value)).digest()
 sha3_384 = lambda value: hashlib.sha3_384(s2b(value)).digest()
 sha3_512 = lambda value: hashlib.sha3_512(s2b(value)).digest()
 
-getproxy = lambda x: {"http": f"http://{x}", "https": f"http://{x}"}
-def getsession(proxy=False, proxies=getproxy('127.0.0.1:8080')):
-    s = requests.Session()
+def getclient(proxy=False, proxies='http://127.0.0.1:8080'):
     if proxy:
-        s.proxies = proxies
-        s.verify = False
-    return s
+        return httpx.Client(proxy=proxies, verify=False, timeout=None)
+    else:
+        return httpx.Client()
 
 def getwebhook(data="", cors=False, content_type='text/html', status_code=200, onlytoken=False):
-    r = requests.post("https://webhook.site/token", json={"default_content": data, "cors": cors, "default_content_type": content_type, "default_status":status_code})
+    r = httpx.post("https://webhook.site/token", json={"default_content": data, "cors": cors, "default_content_type": content_type, "default_status":status_code})
     return r.json()['uuid'] if onlytoken else 'https://webhook.site/'+r.json()['uuid']
 def webhook_ui(token):
     token = token.replace('https://webhook.site/','')
     return f'https://webhook.site/#!/view/{token}'
 def webhook_results(token):
     token = token.replace('https://webhook.site/','')
-    r = requests.get(f'https://webhook.site/token/{token}/requests?sorting=newest')
+    r = httpx.get(f'https://webhook.site/token/{token}/requests?sorting=newest')
     return r.json()['data']
 
 def setdbg(value):
