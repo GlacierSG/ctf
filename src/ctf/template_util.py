@@ -137,6 +137,34 @@ if isinstalled('requests'):
         r = requests.get(f'https://webhook.site/token/{token}/requests?sorting=newest')
         return r.json()['data']
 
+if isinstalled('httpx'):
+    import httpx
+    def getclient(proxy=False, proxies='http://127.0.0.1:8080'):
+        if proxy:
+            return httpx.Client(proxy=proxies, verify=False, timeout=None)
+        else:
+            return httpx.Client()
+
+def _http():
+    if isinstalled('httpx'):
+        return getclient()
+    elif isinstalled('requests'):
+        return getsession()
+    raise Exception('install httpx or requests')
+
+def getwebhook(data="", cors=False, content_type='text/html', status_code=200, onlytoken=False):
+    sess = _http()
+    r = sess.post("https://webhook.site/token", json={"default_content": data, "cors": cors, "default_content_type": content_type, "default_status":status_code})
+    return r.json()['uuid'] if onlytoken else 'https://webhook.site/'+r.json()['uuid']
+def webhook_ui(token):
+    token = token.replace('https://webhook.site/','')
+    return f'https://webhook.site/#!/view/{token}'
+def webhook_results(token):
+    sess = _http()
+    token = token.replace('https://webhook.site/','')
+    r = sess.get(f'https://webhook.site/token/{token}/requests?sorting=newest')
+    return r.json()['data']
+
 def setdbg(value):
     global LOG_DBG
     LOG_DBG = value
