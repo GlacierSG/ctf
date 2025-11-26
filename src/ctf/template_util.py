@@ -23,54 +23,56 @@ def install(modules):
         if not isinstalled(module):
             subprocess.check_call([f"{_python_dir()}/bin/python", "-m", "pip", "install", module])
 
-install([
-    'requests',
-    'pycryptodome'
-])
-
-from Crypto.Util.number import long_to_bytes, bytes_to_long
-from Crypto.Util.Padding import pad as _pad, unpad as _unpad
-from Crypto.Cipher import AES
 from ast import literal_eval 
 import hashlib
-import requests
 from urllib.parse import unquote, quote
+
+
+b2s = lambda value: value.decode() if isinstance(value, bytes) or isinstance(value, bytearray) else value
+s2b = lambda value: value if isinstance(value, bytes) or isinstance(value, bytearray) else value.encode()
+
 
 urld = lambda value: unquote(value)
 urle = lambda value: quote(value)
 
-def unpad(value, size=16):
-    try:
-        return _unpad(s2b(value), size)
-    except ValueError as e:
-        raise ValueError(f"Invalid padding: padding = {value[-size:]}, padding size = {size}")
-pad = lambda value, size=16: _pad(s2b(value), size)
+i2b = lambda v: v.to_bytes((v.bit_length() + 7) // 8 if v.bit_length() != 0 else 1, 'big')
+b2i = lambda v: int.from_bytes(s2b(v), 'big')
 
-aes_ecb_enc = lambda value, key: AES.new(key=s2b(key), mode=AES.MODE_ECB).encrypt(pad(value, 16))
-aes_ecb_dec = lambda value, key: unpad(AES.new(key=s2b(key), mode=AES.MODE_ECB).decrypt(value), 16)
+# Little endian
+i2b_le = lambda v: v.to_bytes((v.bit_length() + 7) // 8 if v.bit_length() != 0 else 1, 'little')
+b2i_le = lambda v: int.from_bytes(s2b(v), 'little')
 
-aes_cbc_enc = lambda value, key, iv: AES.new(key=s2b(key), iv=iv, mode=AES.MODE_CBC).encrypt(pad(value, 16))
-aes_cbc_dec = lambda value, key, iv: unpad(AES.new(key=s2b(key), iv=iv, mode=AES.MODE_CBC).decrypt(value), 16)
+def xor(a, b): 
+    if len(a) == 0: return b
+    if len(b) == 0: return a
+    a, b = s2b(a), s2b(b)
+    return bytes(a[i % len(a)] ^ b[i % len(b)] for i in range(max(len(a), len(b))))
 
-l2b = long_to_bytes
-b2l = bytes_to_long
-i2b = l2b
-b2i = b2l
+if isinstalled('pycryptodome'):
+    from Crypto.Util.Padding import pad as _pad, unpad as _unpad
+    from Crypto.Cipher import AES
+    def unpad(value, size=16):
+        try:
+            return _unpad(s2b(value), size)
+        except ValueError as e:
+            raise ValueError(f"Invalid padding: padding = {value[-size:]}, padding size = {size}")
+    pad = lambda value, size=16: _pad(s2b(value), size)
 
-b2s = lambda value: value.decode() if isinstance(value, bytes) or isinstance(value, bytearray) else value
-s2b = lambda value: value if isinstance(value, bytes) or isinstance(value, bytearray) else value.encode()
+    aes_ecb_enc = lambda value, key: AES.new(key=s2b(key), mode=AES.MODE_ECB).encrypt(pad(value, 16))
+    aes_ecb_dec = lambda value, key: unpad(AES.new(key=s2b(key), mode=AES.MODE_ECB).decrypt(value), 16)
+
+    aes_cbc_enc = lambda value, key, iv: AES.new(key=s2b(key), iv=iv, mode=AES.MODE_CBC).encrypt(pad(value, 16))
+    aes_cbc_dec = lambda value, key, iv: unpad(AES.new(key=s2b(key), iv=iv, mode=AES.MODE_CBC).decrypt(value), 16)
+
 
 lit2py = lambda value: literal_eval(b2s(value))
 
 json2py = lambda value: json.loads(b2s(value))
 py2json = lambda value: json.dumps(value)
 
-# Little endian
-l2b_le = lambda value: l2b(value)[::-1]
-b2l_le = lambda value: b2l(value[::-1])
 
 hex2b = lambda value: (v:=b2s(value).replace(' ','').strip(), bytes.fromhex(v.zfill(len(v)+(len(v))%2)))[1]
-hex2l = lambda value: b2l(hex2b(value))
+hex2i = lambda value: b2i(hex2b(value))
 
 
 bin2b = lambda value: bytes([int(value[max(0,i-8):i], 2) for i in range(len(value), 0, -8)][::-1])
@@ -78,18 +80,20 @@ bin2b = lambda value: bytes([int(value[max(0,i-8):i], 2) for i in range(len(valu
 
 # Little endian
 hex2b_le = lambda value: hex2b(value)[::-1]
-hex2l_le = lambda value: b2l(hex2b(value)[::-1])
+hex2i_le = lambda value: b2i(hex2b(value)[::-1])
 
 b64e = lambda value: base64.b64encode(s2b(value))
 b64d = lambda value: base64.b64decode(s2b(value) + b"="*(-len(value)%4))
-urlsafe_b64e= lambda value: base64.urlsafe_b64encode(s2b(value))
-urlsafe_b64d = lambda value: base64.urlsafe_b64decode(s2b(value) + b"="*(-len(value)%4))
+b64e_url = lambda value: base64.urlsafe_b64encode(s2b(value))
+b64d_url = lambda value: base64.urlsafe_b64decode(s2b(value) + b"="*(-len(value)%4))
 
 # Sorted by freq analysis on flags (ignoring flag{} and random flags)
 string.flag = '''_3tnr0es1a4hloiducympgfb5w7kT!vS2R-ECNDAL6IPH9U8YOMF.GxzW?BK@jVq/: X$,\#QZJ'~{<&}>=+)(|*;%]`[^"'''
 string.lowercase = string.ascii_lowercase
 string.uppercase = string.ascii_uppercase
 string.letters = string.ascii_letters
+string.base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
+string.base64_url = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
 
 run_shell = lambda cmd: subprocess.run(cmd, shell=True, capture_output=True) # x.stdout, x.stderr, x.returncode
 
@@ -111,24 +115,27 @@ sha3_256 = lambda value: hashlib.sha3_256(s2b(value)).digest()
 sha3_384 = lambda value: hashlib.sha3_384(s2b(value)).digest()
 sha3_512 = lambda value: hashlib.sha3_512(s2b(value)).digest()
 
-getproxy = lambda x: {"http": f"http://{x}", "https": f"http://{x}"}
-def getsession(proxy=False, proxies=getproxy('127.0.0.1:8080')):
-    s = requests.Session()
-    if proxy:
-        s.proxies = proxies
-        s.verify = False
-    return s
 
-def getwebhook(data="", cors=False, content_type='text/html', status_code=200, onlytoken=False):
-    r = requests.post("https://webhook.site/token", json={"default_content": data, "cors": cors, "default_content_type": content_type, "default_status":status_code})
-    return r.json()['uuid'] if onlytoken else 'https://webhook.site/'+r.json()['uuid']
-def webhook_ui(token):
-    token = token.replace('https://webhook.site/','')
-    return f'https://webhook.site/#!/view/{token}'
-def webhook_results(token):
-    token = token.replace('https://webhook.site/','')
-    r = requests.get(f'https://webhook.site/token/{token}/requests?sorting=newest')
-    return r.json()['data']
+if isinstalled('requests'):
+    import requests
+    getproxy = lambda x: {"http": f"http://{x}", "https": f"http://{x}"}
+    def getsession(proxy=False, proxies=getproxy('127.0.0.1:8080')):
+        s = requests.Session()
+        if proxy:
+            s.proxies = proxies
+            s.verify = False
+        return s
+
+    def getwebhook(data="", cors=False, content_type='text/html', status_code=200, onlytoken=False):
+        r = requests.post("https://webhook.site/token", json={"default_content": data, "cors": cors, "default_content_type": content_type, "default_status":status_code})
+        return r.json()['uuid'] if onlytoken else 'https://webhook.site/'+r.json()['uuid']
+    def webhook_ui(token):
+        token = token.replace('https://webhook.site/','')
+        return f'https://webhook.site/#!/view/{token}'
+    def webhook_results(token):
+        token = token.replace('https://webhook.site/','')
+        r = requests.get(f'https://webhook.site/token/{token}/requests?sorting=newest')
+        return r.json()['data']
 
 def setdbg(value):
     global LOG_DBG
