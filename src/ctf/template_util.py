@@ -114,6 +114,16 @@ sha3_384 = lambda value: hashlib.sha3_384(s2b(value)).digest()
 sha3_512 = lambda value: hashlib.sha3_512(s2b(value)).digest()
 
 
+def parseheaders(headers):
+    headers = b2s(headers)
+    out = {}
+    for line in headers.split('\n'):
+        line = line.rstrip('\r')
+        if len(line) == 0: continue
+        name, value = line.split(': ', 2)
+        out[name] = value
+    return out
+
 if isinstalled('requests'):
     import requests
     getproxy = lambda x: {"http": f"http://{x}", "https": f"http://{x}"}
