@@ -126,32 +126,23 @@ def parseheaders(headers):
 
 if isinstalled('requests'):
     import requests
-    getproxy = lambda x: {"http": f"http://{x}", "https": f"http://{x}"}
-    def getsession(proxy=False, proxies=getproxy('127.0.0.1:8080')):
+    def getsession(proxy=False, proxyto='127.0.0.1:8080'):
+        proxies = {"http": f"http://{proxyto}", "https": f"http://{proxyto}"}
         s = requests.Session()
         if proxy:
             s.proxies = proxies
             s.verify = False
         return s
 
-    def getwebhook(data="", cors=False, content_type='text/html', status_code=200, onlytoken=False):
-        r = requests.post("https://webhook.site/token", json={"default_content": data, "cors": cors, "default_content_type": content_type, "default_status":status_code})
-        return r.json()['uuid'] if onlytoken else 'https://webhook.site/'+r.json()['uuid']
-    def webhook_ui(token):
-        token = token.replace('https://webhook.site/','')
-        return f'https://webhook.site/#!/view/{token}'
-    def webhook_results(token):
-        token = token.replace('https://webhook.site/','')
-        r = requests.get(f'https://webhook.site/token/{token}/requests?sorting=newest')
-        return r.json()['data']
 
 if isinstalled('httpx'):
     import httpx
-    def getclient(proxy=False, proxies='http://127.0.0.1:8080'):
+    def getclient(proxy=False, proxyto='127.0.0.1:8080'):
         if proxy:
-            return httpx.Client(proxy=proxies, verify=False, timeout=None)
+            return httpx.Client(proxy=f'http://{proxyto}', verify=False, timeout=None)
         else:
             return httpx.Client()
+
 
 def _http():
     if isinstalled('httpx'):
@@ -161,16 +152,14 @@ def _http():
     raise Exception('install httpx or requests')
 
 def getwebhook(data="", cors=False, content_type='text/html', status_code=200, onlytoken=False):
-    sess = _http()
-    r = sess.post("https://webhook.site/token", json={"default_content": data, "cors": cors, "default_content_type": content_type, "default_status":status_code})
+    r = _http().post("https://webhook.site/token", json={"default_content": data, "cors": cors, "default_content_type": content_type, "default_status":status_code})
     return r.json()['uuid'] if onlytoken else 'https://webhook.site/'+r.json()['uuid']
 def webhook_ui(token):
     token = token.replace('https://webhook.site/','')
     return f'https://webhook.site/#!/view/{token}'
 def webhook_results(token):
-    sess = _http()
     token = token.replace('https://webhook.site/','')
-    r = sess.get(f'https://webhook.site/token/{token}/requests?sorting=newest')
+    r = _http().get(f'https://webhook.site/token/{token}/requests?sorting=newest')
     return r.json()['data']
 
 def setdbg(value):
