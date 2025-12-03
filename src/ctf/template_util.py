@@ -1,4 +1,4 @@
-import sys, os, string, re, base64, json, subprocess, itertools, random
+import sys, os, string, re, base64, json, subprocess, itertools, random, secrets
 
 from importlib.metadata import version, PackageNotFoundError
 def isinstalled(modules):
@@ -95,6 +95,7 @@ string.base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+
 string.base64_url = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
 
 rand = lambda length, alphabet=string.letters+string.digits: ''.join(random.choice(alphabet) for _ in range(length))
+securerand = lambda length, alphabet=string.letters+string.digits: ''.join(secrets.choice(alphabet) for _ in range(length))
 
 run_shell = lambda cmd: subprocess.run(cmd, shell=True, capture_output=True) # x.stdout, x.stderr, x.returncode
 
