@@ -1,16 +1,18 @@
 import sys, os, string, re, base64, json, subprocess, itertools, random
 
 from importlib.metadata import version, PackageNotFoundError
+import importlib
 def isinstalled(modules):
     if isinstance(modules, str):
         modules = [modules]
     
     found = True
     for module in modules:
-        try:
-            version(module)
-        except PackageNotFoundError:
-            found = False
+        if importlib.util.find_spec(module) is None:
+            try:
+                version(module)
+            except PackageNotFoundError:
+                found = False
     return found
 
 def install(modules):
@@ -86,7 +88,7 @@ b64e_url = lambda value: base64.urlsafe_b64encode(s2b(value))
 b64d_url = lambda value: base64.urlsafe_b64decode(s2b(value) + b"="*(-len(value)%4))
 
 # Sorted by freq analysis on flags (ignoring flag{} and random flags)
-string.flag = '''_3tnr0es1a4hloiducympgfb5w7kT!vS2R-ECNDAL6IPH9U8YOMF.GxzW?BK@jVq/: X$,\#QZJ'~{<&}>=+)(|*;%]`[^"'''
+string.flag = '''_3tnr0es1a4hloiducympgfb5w7kT!vS2R-ECNDAL6IPH9U8YOMF.GxzW?BK@jVq/: X$,\\#QZJ'~{<&}>=+)(|*;%]`[^"'''
 string.lowercase = string.ascii_lowercase
 string.uppercase = string.ascii_uppercase
 string.letters = string.ascii_letters
