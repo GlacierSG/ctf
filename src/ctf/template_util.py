@@ -22,9 +22,10 @@ def install(modules):
             subprocess.check_call([f"{sys.prefix}/bin/python", "-m", "pip", "install", module])
 
 from ast import literal_eval 
-import hashlib
+import hashlib, uuid as _uuid
 from urllib.parse import unquote, quote
 
+uuid4 = lambda: str(_uuid.uuid4())
 
 b2s = lambda value: value.decode() if isinstance(value, bytes) or isinstance(value, bytearray) else value
 s2b = lambda value: value if isinstance(value, bytes) or isinstance(value, bytearray) else value.encode()
@@ -92,6 +93,8 @@ string.uppercase = string.ascii_uppercase
 string.letters = string.ascii_letters
 string.base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
 string.base64_url = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+
+rand = lambda length, alphabet=string.letters+string.digits: ''.join(random.choice(alphabet) for _ in range(length))
 
 run_shell = lambda cmd: subprocess.run(cmd, shell=True, capture_output=True) # x.stdout, x.stderr, x.returncode
 
