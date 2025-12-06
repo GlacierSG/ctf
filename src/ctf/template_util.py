@@ -157,8 +157,8 @@ def _http():
         return getsession()
     raise Exception('install httpx or requests')
 
-def getwebhook(data="", cors=False, content_type='text/html', status_code=200, onlytoken=False):
-    r = _http().post("https://webhook.site/token", json={"default_content": data, "cors": cors, "default_content_type": content_type, "default_status":status_code})
+def getwebhook(body="", cors=False, content_type='text/html', status_code=200, onlytoken=False):
+    r = _http().post("https://webhook.site/token", json={"default_content": body, "cors": cors, "default_content_type": content_type, "default_status":status_code})
     return r.json()['uuid'] if onlytoken else 'https://webhook.site/'+r.json()['uuid']
 def webhook_ui(token):
     token = token.replace('https://webhook.site/','')
