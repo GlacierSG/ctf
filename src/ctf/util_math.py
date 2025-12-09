@@ -1,6 +1,6 @@
 import math
 from collections import Counter
-from .template_util import *
+from .util_math import *
 
 # Not normal base64 alphabet
 conv_base_charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/"
@@ -43,41 +43,5 @@ def entropy(s, charset=list(range(256))):
     H = -sum(p * math.log2(p) for p in probs if p > 0)
     H_max = math.log2(len(charset))
 
-    return H / H_max
-
-
-# For each number base, sort it based on entropy
-def sorted_base_entropy(value, top=10, log=True):
-    if not isinstance(value, int):
-        raise Exception(f"input should be int")
-    RESET = "\033[0m"
-    def colorize(value, min_val=0.0, max_val=1.0):
-        ratio = (value - min_val) / (max_val - min_val)
-        ratio = max(0.0, min(1.0, ratio))
-
-        if ratio < 0.8:
-            red = int(255 * (ratio / 0.8))
-            green = 255
-        else:
-            red = 255
-            green = int(255 * (1 - (ratio - 0.8) / 0.2))
-
-        return f"\033[38;2;{red};{green};0m{value:.5f}{RESET}"
-
-
-    print('entropy\tbase\tlength')
-    v = []
-    for b in list(range(2,64+1))+list(range(-64,-1)):
-        base_value = i2base(value,b)
-        entropy = shannon_entropy(base_value, conv_base_charset[:abs(b)])
-        v.append((base_value, b, entropy))
-
-    out = (sorted(v, key=lambda x: x[2]))
-    if top is not None:
-        out = out[:top]
-    if log:
-        for (value, b, entropy) in out:
-            print(f'{colorize(entropy)}\t{b}\t{len(value)}')
-    return out
-
-
+    out = H / H_max
+    return 0.0 if out == 0.0 else out # remove -0.0
