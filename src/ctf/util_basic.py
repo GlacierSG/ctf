@@ -1,6 +1,6 @@
-import sys, os, string, re, base64, json, subprocess, itertools, random, secrets
-
+import sys, os, string, re, base64, json, subprocess, itertools, random, secrets, time
 from importlib.metadata import version, PackageNotFoundError
+from multiprocessing import Process as _Process, Queue as _Queue
 import importlib
 def isinstalled(modules):
     if isinstance(modules, str):
@@ -167,6 +167,26 @@ def webhook_results(token):
     token = token.replace('https://webhook.site/','')
     r = _http().get(f'https://webhook.site/token/{token}/requests?sorting=newest')
     return r.json()['data']
+
+
+def withtimeout(func, args, timeout):
+    if args is None: args = ()
+    if not isinstance(args, tuple): args = (args,)
+    q = _Queue()
+    def worker():
+        out = func(*args)
+        q.put(out)
+
+    t = _Process(target=worker)
+    t.start()
+    t.join(timeout=timeout)
+
+    if t.is_alive():
+        t.terminate()
+        return "TIMEOUT"
+    else:
+        return q.get()
+
 
 def setdbg(value):
     global LOG_DBG
