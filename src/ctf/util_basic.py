@@ -26,6 +26,7 @@ def install(modules):
 from ast import literal_eval 
 import hashlib, uuid as _uuid
 from urllib.parse import unquote, quote
+from multiprocessing.pool import ThreadPool
 
 uuid4 = lambda: str(_uuid.uuid4())
 
@@ -167,6 +168,12 @@ def webhook_results(token):
     token = token.replace('https://webhook.site/','')
     r = _http().get(f'https://webhook.site/token/{token}/requests?sorting=newest')
     return r.json()['data']
+
+def runner(func, params, threads=10):
+    def w(args): return func(*(args if isinstance(args, tuple) else (args,)))
+
+    with ThreadPool(processes=threads) as pool:
+        return pool.map_async(w, params).get()
 
 
 def withtimeout(func, args, timeout):
