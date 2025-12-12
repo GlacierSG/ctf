@@ -28,6 +28,23 @@ import hashlib, uuid as _uuid
 from urllib.parse import unquote, quote
 from multiprocessing.pool import ThreadPool
 
+
+def _checkall(args, checktype):
+    for x in args:
+        if not isinstance(x, checktype):
+            raise Exception(f"Expected {str(x)} to be {checktype}")
+    return args
+
+asint = lambda *args: _checkall(args, int)
+asstr = lambda *args: _checkall(args, str)
+asbytes = lambda *args: _checkall(args, bytes)
+def asiter(*args):
+    for x in args:
+        if not hasattr(x, "__iter__")
+            raise Exception(f"Expected {str(x)} to be iterable")
+    return args
+
+
 uuid4 = lambda: str(_uuid.uuid4())
 
 b2s = lambda value: value.decode() if isinstance(value, bytes) or isinstance(value, bytearray) else value
@@ -94,6 +111,7 @@ string.flag = '''_3tnr0es1a4hloiducympgfb5w7kT!vS2R-ECNDAL6IPH9U8YOMF.GxzW?BK@jV
 string.lowercase = string.ascii_lowercase
 string.uppercase = string.ascii_uppercase
 string.letters = string.ascii_letters
+string.alphanumeric = string.letters + string.digits
 string.base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
 string.base64_url = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
 
