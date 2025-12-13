@@ -40,7 +40,7 @@ asstr = lambda *args: _checkall(args, str)
 asbytes = lambda *args: _checkall(args, bytes)
 def asiter(*args):
     for x in args:
-        if not hasattr(x, "__iter__")
+        if not hasattr(x, "__iter__"):
             raise Exception(f"Expected {str(x)} to be iterable")
     return args
 
@@ -187,11 +187,15 @@ def webhook_results(token):
     r = _http().get(f'https://webhook.site/token/{token}/requests?sorting=newest')
     return r.json()['data']
 
-def runner(func, params, threads=10):
-    def w(args): return func(*(args if isinstance(args, tuple) else (args,)))
+def runner(func, params, threads=1):
+    if threads == 1:
+        for args in params:
+            func(*(args if isinstance(args, tuple) else (args,)))
+    else:
+        def w(args): return func(*(args if isinstance(args, tuple) else (args,)))
 
-    with ThreadPool(processes=threads) as pool:
-        return pool.map_async(w, params).get()
+        with ThreadPool(processes=threads) as pool:
+            return pool.map_async(w, params).get()
 
 
 def withtimeout(func, args, timeout):
