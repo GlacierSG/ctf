@@ -31,21 +31,6 @@ from copy import deepcopy as clone
 import logging
 
 
-def loginfo():
-    logging.getLogger('ctf').setLevel(logging.INFO)
-def info(msg):
-    logging.getLogger('ctf').info(msg)
-    return msg
-def logdebug():
-    logging.getLogger("ctf").setLevel(logging.DEBUG)
-def debug(msg):
-    logging.getLogger('ctf').debug(msg)
-    return msg
-def logcritical():
-    logging.getLogger("ctf").setLevel(logging.CRITICAL)
-
-loginfo()
-
 def _checkall(args, checktype):
     for x in args:
         if not isinstance(x, checktype):

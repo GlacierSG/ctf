@@ -31,7 +31,7 @@ assert(crypto_cpa(oracle, idx=len(prefix), block_size=16, threads=10, known=know
         for c, enc in zip(charset, values):
             if enc[blk_idx:blk_idx+block_size] == base[blk_idx:blk_idx+block_size]:
                 msg += bytearray([c])
-                info(f'Found character: {bytes(msg)}')
+                logging.info(f'Found character: {bytes(msg)}')
                 break
         else:
             break

@@ -5,17 +5,15 @@ from Crypto.Cipher import AES
 
 def test_crypto_cpa():
     aes_ecb_enc = lambda value, key: AES.new(key=s2b(key), mode=AES.MODE_ECB).encrypt(pad(value, 16))
-    enc_oracle = lambda x: aes_ecb_enc(x+b'asdfjoidsjfoie9fj9jeifj', b'a'*16)
 
-    known = b'ojadfsoije'
-    prefix = b'asdfjd'
-    msg = known+b'oiwejfo23j09wejf09j09jw09fejijfd'
+    known = b'abcdef'
+    prefix = b'ABCDEF'
+    secret = b'0123456789QWERT'
     block_size = 16
-    oracle = lambda x: AES.new(key=b'a'*16, mode=AES.MODE_ECB).encrypt(pad(prefix+x+msg, block_size))
-    assert(crypto_cpa(oracle, len(prefix), block_size, threads=10, known=known) == msg+b'\x01')
+    oracle = lambda x: AES.new(key=b'a'*16, mode=AES.MODE_ECB).encrypt(pad(prefix+x+known+secret, block_size))
+    assert(crypto_cpa(oracle, len(prefix), block_size, threads=10, known=known) == secret + b'\x01')
 
-    aes_ecb_dec = lambda value, key: (AES.new(key=s2b(key), mode=AES.MODE_ECB).decrypt(value), 16)
 
     assert(crypto_cpa(lambda x: aes_ecb_enc(x+b'asdfjoidsjfoie9fj9jeifj', b'a'*16), 0, 16, threads=10) == bytearray(b'asdfjoidsjfoie9fj9jeifj\x01'))
     assert(crypto_cpa(lambda x: aes_ecb_enc(b'asdf'+x+b'asdfjoidsjfoie9fj9jeifj', b'a'*16), 4, 16, threads=10) == bytearray(b'asdfjoidsjfoie9fj9jeifj\x01'))
-    assert(crypto_cpa(lambda x: aes_ecb_enc(b'a'*131+x+b'asdfjoidsjfoie9fj9jeifj', b'a'*16), 131, 16, threads=10, known=b'asdfjoi') == bytearray(b'asdfjoidsjfoie9fj9jeifj\x01'))
+    assert(crypto_cpa(lambda x: aes_ecb_enc(b'a'*131+x+b'asdfjoidsjfoie9fj9jeifj', b'a'*16), 131, 16, threads=10, known=b'asdfjoi') == bytearray(b'dsjfoie9fj9jeifj\x01'))
