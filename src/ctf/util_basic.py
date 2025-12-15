@@ -27,7 +27,23 @@ from ast import literal_eval
 import hashlib, uuid as _uuid
 from urllib.parse import unquote, quote
 from multiprocessing.pool import ThreadPool
+import logging
 
+
+def loginfo():
+    logging.getLogger('ctf').setLevel(logging.INFO)
+def info(msg):
+    logging.getLogger('ctf').info(msg)
+    return msg
+def logdebug():
+    logging.getLogger("ctf").setLevel(logging.DEBUG)
+def debug(msg):
+    logging.getLogger('ctf').debug(msg)
+    return msg
+def logcritical():
+    logging.getLogger("ctf").setLevel(logging.CRITICAL)
+
+loginfo()
 
 def _checkall(args, checktype):
     for x in args:
@@ -190,13 +206,12 @@ def webhook_results(token):
 def runner(func, params, threads=1):
     if threads == 1:
         for args in params:
-            func(*(args if isinstance(args, tuple) else (args,)))
+            yield func(*(args if isinstance(args, tuple) else (args,)))
     else:
         def w(args): return func(*(args if isinstance(args, tuple) else (args,)))
-
         with ThreadPool(processes=threads) as pool:
-            return pool.map_async(w, params).get()
-
+            for result in pool.imap(w, params):
+                yield result 
 
 def withtimeout(func, args, timeout):
     if args is None: args = ()
@@ -250,3 +265,42 @@ def bsearch(func, lo, hi): # func(x): if x <= 1: True; else: False # outputs 1
         else:
             hi = m-1
     return out
+
+def product(*args):
+    *pools, repeat = args
+    if not isinstance(repeat, int):
+        raise TypeError("Last argument must be an integer")
+
+    isstr = True
+    isbytes = True
+    isbytearray = True
+    for pool in pools:
+        if not isinstance(pool, str):
+            isstr = False
+        if not isinstance(pool, bytes):
+            isbytes = False
+        if not isinstance(pool, bytearray):
+            isbytearray = False
+
+    pools = pools * repeat
+
+    def _gen(i, acc):
+        if i == len(pools):
+            yield tuple(acc)
+            return
+        for v in pools[i]:
+            acc.append(v)
+            yield from _gen(i + 1, acc)
+            acc.pop()
+    if isstr:
+        for v in _gen(0, []):
+            yield ''.join(v)
+    elif isbytes:
+        for v in _gen(0, []):
+            yield bytes(v)
+    elif isbytearray:
+        for v in _gen(0, []):
+            yield bytearray(v)
+    else:
+        yield from _gen(0, [])
+
