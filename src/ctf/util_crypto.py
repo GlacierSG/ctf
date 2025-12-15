@@ -31,4 +31,3 @@ def crypto_cpa(encrypt_oracle, idx, block_size, threads=1, charset=bytes(range(2
             break
         idx += 1
     return msg
-

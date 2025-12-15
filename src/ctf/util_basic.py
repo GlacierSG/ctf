@@ -27,6 +27,7 @@ from ast import literal_eval
 import hashlib, uuid as _uuid
 from urllib.parse import unquote, quote
 from multiprocessing.pool import ThreadPool
+from copy import deepcopy as clone
 
 
 def _checkall(args, checktype):
@@ -70,6 +71,7 @@ def xor(a, b):
 if isinstalled('pycryptodome'):
     from Crypto.Util.Padding import pad as _pad, unpad as _unpad
     from Crypto.Cipher import AES
+    from Crypto.Util.number import getPrime, isPrime
     def unpad(value, size=16):
         try:
             return _unpad(s2b(value), size)
