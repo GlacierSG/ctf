@@ -1,4 +1,4 @@
-import math
+from math import factorial, log2
 from collections import Counter
 from .util_math import *
 
@@ -40,8 +40,10 @@ def entropy(s, charset=list(range(256))):
     probs = [counts[c]/L for c in charset]
     
     # Shannon entropy
-    H = -sum(p * math.log2(p) for p in probs if p > 0)
-    H_max = math.log2(len(charset))
+    H = -sum(p * log2(p) for p in probs if p > 0)
+    H_max = log2(len(charset))
 
     out = H / H_max
     return 0.0 if out == 0.0 else out # remove -0.0
+
+

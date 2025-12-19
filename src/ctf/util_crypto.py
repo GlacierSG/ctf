@@ -39,3 +39,34 @@ assert(crypto_cpa(oracle, idx=len(prefix), block_size=16, threads=10, known=know
         i += 1
     return bytes(msg[len(known):])
 
+
+def crypto_pa(padding_oracle, encrypted, block_size, threads=1, charset=bytes(range(256)), known=b'', amount=None):
+
+    charset = s2b(charset)
+    out = bytearray(s2b(known))
+    
+    enc = bytearray(encrypted)
+    cur_pad = len(out) % block_size
+    i = 0
+    while True if amount is None else i < amount:
+        valid = padding_oracle(enc) if i % block_size == 0 else False 
+        l = -block_size-cur_pad
+        o = enc[l]
+        values = runner(padding_oracle, [enc[:l]+bytes([c])+enc[l+1:] for c in charset], threads=threads)
+        for c, ispad in zip(charset, values):
+            if valid and c == o:
+                continue
+            if ispad:
+                v = o ^ c ^ cur_pad
+                out = [v] + out
+                break
+        else:
+            if i % block_size == 0:
+                out = [1] + out
+            else:
+                break
+        cur_pad = (cur_pad + 1) % 16
+        if cur_pad == 0:
+            enc = enc[:-block_size]
+            if len(enc) < block_size*2:
+                break
