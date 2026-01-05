@@ -69,23 +69,6 @@ def xor(a, b):
     a, b = s2b(a), s2b(b)
     return bytes(a[i % len(a)] ^ b[i % len(b)] for i in range(max(len(a), len(b))))
 
-if isinstalled('pycryptodome'):
-    from Crypto.Util.Padding import pad as _pad, unpad as _unpad
-    from Crypto.Cipher import AES
-    from Crypto.Util.number import getPrime, isPrime
-    def unpad(value, size=16):
-        try:
-            return _unpad(s2b(value), size)
-        except ValueError as e:
-            raise ValueError(f"Invalid padding: padding = {value[-size:]}, padding size = {size}")
-    pad = lambda value, size=16: _pad(s2b(value), size)
-
-    aes_ecb_enc = lambda value, key: AES.new(key=s2b(key), mode=AES.MODE_ECB).encrypt(pad(value, 16))
-    aes_ecb_dec = lambda value, key: unpad(AES.new(key=s2b(key), mode=AES.MODE_ECB).decrypt(value), 16)
-
-    aes_cbc_enc = lambda value, key, iv: AES.new(key=s2b(key), iv=iv, mode=AES.MODE_CBC).encrypt(pad(value, 16))
-    aes_cbc_dec = lambda value, key, iv: unpad(AES.new(key=s2b(key), iv=iv, mode=AES.MODE_CBC).decrypt(value), 16)
-
 
 lit2py = lambda value: literal_eval(b2s(value))
 
