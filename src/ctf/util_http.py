@@ -1,5 +1,7 @@
 from .util_basic import *
 
+requests = import_or_err('requests', None, 'pip install requests')
+httpx = import_or_err('httpx', None, 'pip install httpx')
 
 def parseheaders(headers):
     headers = b2s(headers)
@@ -11,24 +13,20 @@ def parseheaders(headers):
         out[name] = value
     return out
 
-if isinstalled('requests'):
-    import requests
-    def getsession(proxy=False, proxyto='127.0.0.1:8080'):
-        proxies = {"http": f"http://{proxyto}", "https": f"http://{proxyto}"}
-        s = requests.Session()
-        if proxy:
-            s.proxies = proxies
-            s.verify = False
-        return s
+def getsession(proxy=False, proxyto='127.0.0.1:8080'):
+    proxies = {"http": f"http://{proxyto}", "https": f"http://{proxyto}"}
+    s = requests.Session()
+    if proxy:
+        s.proxies = proxies
+        s.verify = False
+    return s
 
 
-if isinstalled('httpx'):
-    import httpx
-    def getclient(proxy=False, proxyto='127.0.0.1:8080'):
-        if proxy:
-            return httpx.Client(proxy=f'http://{proxyto}', verify=False, timeout=None)
-        else:
-            return httpx.Client()
+def getclient(proxy=False, proxyto='127.0.0.1:8080'):
+    if proxy:
+        return httpx.Client(proxy=f'http://{proxyto}', verify=False, timeout=None)
+    else:
+        return httpx.Client()
 
 
 def _http():

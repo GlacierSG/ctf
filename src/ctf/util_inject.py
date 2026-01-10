@@ -1,6 +1,8 @@
 from .util_basic import *
 
 def revshells(ip, port, linux=True, udp=False, tcp=True, tls=False, windows=False):
+    print('\n'.join(list_revshells(ip,port,linux,udp,tcp,tls,windows)))
+def list_revshells(ip, port, linux=True, udp=False, tcp=True, tls=False, windows=False):
     # Majority is from https://github.com/0dayCTF/reverse-shell-generator
     # TODO: test windows payloads
     if linux:

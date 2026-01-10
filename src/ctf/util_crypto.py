@@ -1,37 +1,34 @@
 from .util_basic import *
 
 
-if isinstalled('pycryptodome'):
-    from Crypto.Util.Padding import pad as _pad, unpad as _unpad
-    from Crypto.Cipher import AES
-    from Crypto.Util.number import getPrime, isPrime
-    def unpad(value, size=16):
-        try:
-            return _unpad(s2b(value), size)
-        except ValueError as e:
-            raise ValueError(f"Invalid padding: padding = {value[-size:]}, padding size = {size}")
-    pad = lambda value, size=16: _pad(s2b(value), size)
+_pad, _unpad = import_or_err('Crypto.Util.Padding', ['pad','unpad'], 'pip install pycryptodome')
+AES = import_or_err('Crypto.Cipher', ['AES'], 'pip install pycryptodome')
+getPrime, isPrime = import_or_err('Crypto.Util.number', ['getPrime','isPrime'], 'pip install pycryptodome')
 
-    aes_ecb_enc = lambda value, key: AES.new(key=s2b(key), mode=AES.MODE_ECB).encrypt(pad(value, 16))
-    aes_ecb_dec = lambda value, key: unpad(AES.new(key=s2b(key), mode=AES.MODE_ECB).decrypt(value), 16)
+def unpad(value, size=16):
+    try:
+        return _unpad(s2b(value), size)
+    except ValueError as e:
+        raise ValueError(f"Invalid padding: padding = {value[-size:]}, padding size = {size}")
+pad = lambda value, size=16: _pad(s2b(value), size)
 
-    aes_cbc_enc = lambda value, key, iv: AES.new(key=s2b(key), iv=iv, mode=AES.MODE_CBC).encrypt(pad(value, 16))
-    aes_cbc_dec = lambda value, key, iv: unpad(AES.new(key=s2b(key), iv=iv, mode=AES.MODE_CBC).decrypt(value), 16)
+aes_ecb_enc = lambda value, key: AES.new(key=s2b(key), mode=AES.MODE_ECB).encrypt(pad(value, 16))
+aes_ecb_dec = lambda value, key: unpad(AES.new(key=s2b(key), mode=AES.MODE_ECB).decrypt(value), 16)
+
+aes_cbc_enc = lambda value, key, iv: AES.new(key=s2b(key), iv=iv, mode=AES.MODE_CBC).encrypt(pad(value, 16))
+aes_cbc_dec = lambda value, key, iv: unpad(AES.new(key=s2b(key), iv=iv, mode=AES.MODE_CBC).decrypt(value), 16)
 
 
 
 def crypto_cpa(encrypt_oracle, idx, block_size, threads=1, charset=bytes(range(256)), known=b'', amount=None):
     ## Chosen Plaintext Attack
-    # Usage:
     '''python
-from Crypto.Cipher import AES
-
-known = b'ojadfsoije'
 prefix = b'asdfjd'
-secret = b'oiwejfo23j09wejf09j09jw09fejijfd'
+known = b'ojadfsoije'
+secret = b'oiwejfo23j09wejf09j09jw09fejijf'
 block_size = 16
 oracle = lambda x: AES.new(key=b'a'*16, mode=AES.MODE_ECB).encrypt(pad(prefix+x+known+secret, block_size))
-assert(crypto_cpa(oracle, idx=len(prefix), block_size=16, threads=10, known=known, amount=8) == secret[:8])
+assert(crypto_cpa(oracle, idx=len(prefix), block_size=16, threads=10, known=known).rstrip(b'\x01') == known+secret)
     '''
     charset = s2b(charset)
     msg = bytearray(s2b(known))
@@ -58,42 +55,45 @@ assert(crypto_cpa(oracle, idx=len(prefix), block_size=16, threads=10, known=know
             break
         idx += 1
         i += 1
-    return bytes(msg[len(known):])
+    return bytes(msg)
 
 def crypto_pa(padding_oracle, encrypted, block_size, threads=1, charset=bytes(range(256)), known=b'', amount=None):
+    ## Padding Attack
+    # Usage:
     '''
-from Crypto.Util.Padding import pad, unpad
-from Crypto.Cipher import AES
-
 block_size = 16
-known  = b"ojadfsoije"
 prefix = b"asdfjd"
-secret = b"oiwejfo23j09wejf09j09jw09fejijfd"
+secret = b"ofdsa"
 
 def encrypt():
     cipher = AES.new(b'a'*16, AES.MODE_CBC, b'a'*16)
-    pt = pad(prefix + known + secret, block_size)
+    pt = pad(prefix + secret, block_size)
     return b'a'*16 + cipher.encrypt(pt)
-
-ciphertext = encrypt()
 
 def padding_oracle(x: bytes) -> bool:
     try:
-        cipher = AES.new(b'a'*16, AES.MODE_CBC, b'a'*16)
-        pt = cipher.decrypt(x[16:]) # remove IV
+        cipher = AES.new(b'a'*16, AES.MODE_CBC, x[:16])
+        pt = cipher.decrypt(x[16:])
         unpad(pt, block_size)
         return True
     except ValueError:
         return False
 
-assert(crypto_pa(padding_oracle, ciphertext, block_size=block_size) == secret)
+assert(crypto_pa(padding_oracle, encrypt(), block_size, known=b'\x05'*5, amount=10).rstrip(b'\x05') == secret)
     '''
-
     charset = s2b(charset)
-    out = bytearray(s2b(known))
-    enc = bytearray(encrypted)
+    known = s2b(known)
 
-    i = 0
+    enc = bytearray(encrypted)
+    out = bytearray(known)
+
+    full_blocks = len(known) // block_size
+    cut = full_blocks * block_size
+    if cut and len(enc) >= 16 + cut:
+        enc = enc[:-cut]
+
+    i = len(out)
+
     while amount is None or i < amount:
         cur_pad = i % block_size
         padval = cur_pad + 1
@@ -132,8 +132,5 @@ assert(crypto_pa(padding_oracle, ciphertext, block_size=block_size) == secret)
             if len(enc) < block_size * 2:
                 break
 
-    try:
-        return unpad(bytes(out), block_size)
-    except ValueError:
-        return bytes(out)
+    return bytes(out)
 
